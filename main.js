@@ -46,6 +46,7 @@ function initGUI() {
             tr.appendChild(td);
         }
         tbody.appendChild(tr);
+        
     }
 } 
 
