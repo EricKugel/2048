@@ -1,0 +1,14 @@
+body {
+    background-color: #999999;
+}
+
+table {
+    margin: auto;
+    border-collapse: collapse;
+}
+
+td {
+    border: 1px solid black;
+    text-align: center;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
