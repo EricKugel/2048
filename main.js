@@ -25,7 +25,12 @@ window.onload = function() {
     generateTile();
     updateTable();
 
-    window.setTimeout(() => {window.location.replace("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}, 3000);
+    // window.setTimeout(() => {window.location.replace("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}, 3000);
+    window.addEventListener('keydown', (e) => {
+        shift(e.code)
+        generateTile();
+        updateTable();
+    })
 }
 
 function initGUI() {
@@ -46,7 +51,6 @@ function initGUI() {
             tr.appendChild(td);
         }
         tbody.appendChild(tr);
-        
     }
 } 
 
@@ -55,17 +59,25 @@ function generateTile() {
     if (Math.random() > .66) {
         value = 4;
     }
-    var done = false;
-    var row = -1;
-    var col = -1;
-    while (!done) {
-        row = Math.floor(Math.random() * 4);
-        col = Math.floor(Math.random() * 4);
-        if (board[row][col] == 0) {
-            done = true;
+    
+    var rows = [0, 1, 2, 3];
+    while(rows.length > 0) {
+        var rowIndex = Math.floor(Math.random() * rows.length)
+        var row = rows[rowIndex];
+        var cols = [0, 1, 2, 3];
+        while(cols.length > 0) {
+            var colIndex = Math.floor(Math.random() * cols.length);
+            var col = cols[colIndex];
+            if (board[row][col] == 0) {
+                board[row][col] = value;
+                return true;
+            }
+            cols.splice(colIndex, 1);
         }
+        rows.splice(rowIndex, 1);
     }
-    board[row][col] = value;
+
+    return false;
 }
 
 function updateTable() {
@@ -74,6 +86,7 @@ function updateTable() {
         for (var col = 0; col < 4; col++) {
             var value = board[row][col];
             var tile = tableRow.children[col];
+            tile.innerText = "";
             if (values.includes(value)) {
                 tile.style.backgroundColor = colors[value];
                 if (value != 0) {
@@ -84,4 +97,52 @@ function updateTable() {
             }
         }
     }
+}
+
+function shift(direction) {
+    if (direction == "ArrowLeft") {
+        for (var row = 0; row < 4; row++) {
+            board[row] = condenseArray(board[row])
+        }
+    } else if (direction == "ArrowRight") {
+        for (var row = 0; row < 4; row++) {
+            board[row] = condenseArray(board[row].reverse()).reverse();
+        }
+    } else if (direction == "ArrowUp") {
+        for (var col = 0; col < 4; col++) {
+            var numbers = [];
+            for (var row = 0; row < 4; row++) {
+                numbers.push(board[row][col]);
+            }
+            numbers = condenseArray(numbers);
+            for (var row = 0; row < 4; row++) {
+                board[row][col] = numbers[row];
+            }
+        }
+    } else if (direction == "ArrowDown") {
+        for (var col = 0; col < 4; col++) {
+            var numbers = [];
+            for (var row = 3; row >= 0; row--) {
+                numbers.push(board[row][col]);
+            }
+            numbers = condenseArray(numbers);
+            for (var row = 3; row >= 0; row--) {
+                board[row][col] = numbers[3 - row];
+            }
+        }
+    }
+}
+
+function condenseArray(numbers) {
+    numbers = numbers.filter(num => num != 0);
+    for (var i = 0; i < numbers.length - 1; i++) {
+        if (numbers[i] == numbers[i + 1]) {
+            numbers[i] = numbers[i] * 2;
+            numbers.splice(i + 1, 1);
+        }
+    }
+    while (numbers.length < 4) {
+        numbers.push(0);
+    }
+    return numbers;
 }
