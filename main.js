@@ -25,15 +25,26 @@ window.onload = function() {
     generateTile();
     updateTable();
 
-    // window.setTimeout(() => {window.location.replace("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}, 3000);
     window.addEventListener('keydown', (e) => {
         shift(e.code)
         generateTile();
         updateTable();
+    });
+    document.addEventListener('swiped', function(e) {
+        shift(e.detail.dir);
+        generateTile();
+        updateTable();
+    });
+    document.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+    }, {
+        passive: false,
+        useCapture: false
     })
 }
 
 function initGUI() {
+    table.innerHTML = "";
     var size = (Math.min(window.innerHeight, window.innerWidth)) * 0.75;
     var tileSize = size / 4;
     table.style.width = "" + size + "px";
@@ -52,7 +63,7 @@ function initGUI() {
         }
         tbody.appendChild(tr);
     }
-} 
+}
 
 function generateTile() {
     var value = 2;
@@ -81,10 +92,14 @@ function generateTile() {
 }
 
 function updateTable() {
+    var gameOver = false;
     for (var row = 0; row < 4; row++) {
         let tableRow = table.getElementsByTagName("tr")[row];
         for (var col = 0; col < 4; col++) {
             var value = board[row][col];
+            if (value == 2048) {
+                gameOver = true;
+            }
             var tile = tableRow.children[col];
             tile.innerText = "";
             if (values.includes(value)) {
@@ -97,18 +112,22 @@ function updateTable() {
             }
         }
     }
+
+    if (gameOver) {
+        window.setTimeout(() => {window.location.replace("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}, 1000);
+    }
 }
 
 function shift(direction) {
-    if (direction == "ArrowLeft") {
+    if (direction == "ArrowLeft" || direction == "left") {
         for (var row = 0; row < 4; row++) {
             board[row] = condenseArray(board[row])
         }
-    } else if (direction == "ArrowRight") {
+    } else if (direction == "ArrowRight" || direction == "right") {
         for (var row = 0; row < 4; row++) {
             board[row] = condenseArray(board[row].reverse()).reverse();
         }
-    } else if (direction == "ArrowUp") {
+    } else if (direction == "ArrowUp" || direction == "up") {
         for (var col = 0; col < 4; col++) {
             var numbers = [];
             for (var row = 0; row < 4; row++) {
@@ -119,7 +138,7 @@ function shift(direction) {
                 board[row][col] = numbers[row];
             }
         }
-    } else if (direction == "ArrowDown") {
+    } else if (direction == "ArrowDown" || direction == "down") {
         for (var col = 0; col < 4; col++) {
             var numbers = [];
             for (var row = 3; row >= 0; row--) {
