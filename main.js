@@ -2,7 +2,7 @@ var table;
 var board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 var table;
 
-const maxDepth = 5;
+const maxDepth = 3;
 
 var botInterval; 
 
@@ -56,7 +56,7 @@ function findBestMove(board, depth = 0) {
         if (depth < maxDepth) {
             moveScores[i] = findBestMove(newBoard, depth + 1);
         } else {
-            moveScores[i] = staticAnalysis(depth, newBoard);
+            moveScores[i] = staticAnalysis(newBoard);
         }
     }
     
@@ -79,8 +79,8 @@ function findBestMove(board, depth = 0) {
     }
 }
 
-function staticAnalysis(depth, board) {
-    var numZeros = depth;
+function staticAnalysis(board) {
+    var numZeros = 0;
     for (var row = 0; row < board.length; row++) {
         for (var col = 0; col < board[0].length; col++) {
             if (board[row][col] == 0) {
