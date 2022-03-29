@@ -1,6 +1,10 @@
 var table;
-var board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+var board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
 var table;
+
+const maxDepth = 5;
+
+var botInterval; 
 
 const values = [0, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
 const colors = {
@@ -26,12 +30,12 @@ window.onload = function() {
     updateTable();
 
     window.addEventListener('keydown', (e) => {
-        shift(e.code)
+        shift(board, e.code)
         generateTile();
         updateTable();
     });
     document.addEventListener('swiped', function(e) {
-        shift(e.detail.dir);
+        shift(board, e.detail.dir);
         generateTile();
         updateTable();
     });
@@ -40,7 +44,60 @@ window.onload = function() {
     }, {
         passive: false,
         useCapture: false
-    })
+    });
+}
+
+function findBestMove(board, depth = 0) {
+    const directions = ["up", "down", "left", "right"];
+    var moveScores = [0, 0, 0, 0];
+    for (var i = 0; i < directions.length; i++) {
+        var newBoard = JSON.parse(JSON.stringify(board));
+        newBoard = shift(newBoard, directions[i]);
+        if (depth < maxDepth) {
+            moveScores[i] = findBestMove(newBoard, depth + 1);
+        } else {
+            moveScores[i] = staticAnalysis(depth, newBoard);
+        }
+    }
+    
+    var index = 0;
+    var max = moveScores[0];
+    var squaredSum = 0;
+    for (var i = 0; i < moveScores.length; i++) {
+        if (depth == 0 && moveScores[i] > max) {
+            max = moveScores[i];
+            index = i;
+        } else {
+            squaredSum += Math.pow(moveScores[i], 2);  
+        } 
+    }
+
+    if (depth == 0) {
+        return directions[index];
+    } else {
+        return squaredSum / 4;
+    }
+}
+
+function staticAnalysis(depth, board) {
+    var numZeros = depth;
+    for (var row = 0; row < board.length; row++) {
+        for (var col = 0; col < board[0].length; col++) {
+            if (board[row][col] == 0) {
+                numZeros += 1;
+            }
+        }
+    }
+
+    var score = 0;
+    for (var row = 0; row < board.length; row++) {
+        for (var col = 0; col < board.length; col++) {
+            score += Math.pow(board[row][col], 2);
+        }
+    }
+
+    score = score * (16 - numZeros) / 16;
+    return score;
 }
 
 function initGUI() {
@@ -118,7 +175,7 @@ function updateTable() {
     }
 }
 
-function shift(direction) {
+function shift(board, direction) {
     if (direction == "ArrowLeft" || direction == "left") {
         for (var row = 0; row < 4; row++) {
             board[row] = condenseArray(board[row])
@@ -150,6 +207,7 @@ function shift(direction) {
             }
         }
     }
+    return board;
 }
 
 function condenseArray(numbers) {
@@ -164,4 +222,20 @@ function condenseArray(numbers) {
         numbers.push(0);
     }
     return numbers;
+}
+
+function buttonClicked() {
+    let button = document.getElementById("button");
+    if (button.innerText == "Run Bot (Beta)") {
+        botInterval = setInterval(() => {
+            var direction = findBestMove(board);
+            board = shift(board, direction);
+            generateTile();
+            updateTable();
+        }, 200);
+        button.innerText = "Pause Bot (Beta)";
+    } else {
+        clearInterval(botInterval);
+        button.innerText = "Run Bot (Beta)";
+    }
 }
